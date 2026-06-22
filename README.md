@@ -1,9 +1,9 @@
 # Java vs. Kotlin – JMH Benchmark Suite
 
-Dieses Repository enthält die Benchmark-Implementierungen zur empirischen Studie
+Dieses Repository enthält die Benchmark-Implementierungen zum Paper
 **„Eine empirische Analyse der Performance und Speicherverwaltung von Java und Kotlin"**.
 
-Ziel der Studie ist ein systematischer Vergleich beider Sprachen hinsichtlich
+Ziel des Papers ist ein systematischer Vergleich beider Sprachen hinsichtlich
 Laufzeitperformance und Speicherverbrauch unter identischen Bedingungen auf der JVM.
 
 ---
