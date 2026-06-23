@@ -20,6 +20,7 @@
 #    ./run.sh -wi 3 -i 5 -f 1 Boxing      # smoke-test, Boxing only
 #    ./run.sh "Boxing|Lambda"              # multiple scenarios
 # =====================================================================
+
 set -euo pipefail
 
 IMAGE_NAME="jmh-benchmarks:latest"

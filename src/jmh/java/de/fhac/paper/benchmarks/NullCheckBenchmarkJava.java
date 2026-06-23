@@ -13,7 +13,7 @@ public class NullCheckBenchmarkJava {
     int size;
 
     @Benchmark
-    public int manualCheck() {
+    public int run() {
         int sum = 0;
         for (int i = 0; i < size; i++) {
             String s = (i % 2 == 0) ? "x" : "y";

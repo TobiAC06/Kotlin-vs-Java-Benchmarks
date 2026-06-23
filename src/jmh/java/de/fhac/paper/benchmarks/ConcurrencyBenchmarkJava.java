@@ -8,13 +8,13 @@ import java.util.concurrent.*;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(java.util.concurrent.TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
-public class VirtualThreadBenchmarkJava {
+public class ConcurrencyBenchmarkJava {
 
     @Param({"100000"})
     int size;
 
     @Benchmark
-    public long virtualThreads() throws Exception {
+    public long run() throws Exception {
         try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
             List<Future<Integer>> futures = new ArrayList<>();
             for (int i = 0; i < size; i++) {

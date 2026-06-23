@@ -13,7 +13,7 @@ open class NullCheckBenchmarkKotlin {
     var size: Int = 0
 
     @Benchmark
-    fun nullsafe(): Int {
+    fun run(): Int {
         var sum = 0
         for (i in 0..<size) {
             val s = if (i % 2 == 0) "x" else "y"

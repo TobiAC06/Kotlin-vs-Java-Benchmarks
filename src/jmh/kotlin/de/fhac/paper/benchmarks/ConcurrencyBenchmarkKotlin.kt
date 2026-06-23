@@ -6,13 +6,13 @@ import java.util.concurrent.TimeUnit
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
-open class CoroutineBenchmarkKotlin {
+open class ConcurrencyBenchmarkKotlin {
 
     @Param("100000")
     var size: Int = 0
 
     @Benchmark
-    fun coroutines(): Int = runBlocking {
+    fun run(): Int = runBlocking {
         coroutineScope {
             val jobs = (0..<size).map { i ->
                 async {
