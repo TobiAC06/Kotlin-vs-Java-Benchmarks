@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
-class SieveBenchmarkKotlin{
+open class SieveBenchmarkKotlin{
 
     @Param("100000")
     var size: Int = 0

@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
-class LambdaBenchmarkKotlin {
+open class LambdaBenchmarkKotlin {
     @Param("100000")
     var size: Int = 0
 
@@ -20,10 +20,7 @@ class LambdaBenchmarkKotlin {
 
     @Benchmark
     fun stream(): Int {
-        return data.stream()
-            .filter { x: Int? -> x!! % 2 == 0 }
-            .mapToInt { x: Int? -> x!! }
-            .sum()
+        return data.filter { x: Int -> x % 2 == 0 }.sum()
     }
 
     @Benchmark

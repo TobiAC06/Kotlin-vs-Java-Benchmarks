@@ -1,159 +1,226 @@
-# Java vs. Kotlin – JMH Benchmark Suite
+# Java vs. Kotlin - JMH Benchmark Suite
 
-Dieses Repository enthält die Benchmark-Implementierungen zum Paper
-**„Eine empirische Analyse der Performance und Speicherverwaltung von Java und Kotlin"**.
-
-Ziel des Papers ist ein systematischer Vergleich beider Sprachen hinsichtlich
-Laufzeitperformance und Speicherverbrauch unter identischen Bedingungen auf der JVM.
+Empirical analysis of runtime performance and memory management of Java and Kotlin on the JVM.
+Accompanies the paper *"Eine empirische Analyse der Performance und Speicherverwaltung von Java und Kotlin"*.
 
 ---
 
-## Projektstruktur
+## Table of Contents
+
+1. [Project Structure](#project-structure)
+2. [Requirements](#requirements)
+3. [Quick Start](#quick-start)
+4. [Building](#building)
+5. [Running Benchmarks](#running-benchmarks)
+6. [Benchmark Scenarios](#benchmark-scenarios)
+7. [JMH Configuration](#jmh-configuration)
+8. [Results](#results)
+9. [JVM Flags & Reproducibility](#jvm-flags--reproducibility)
+
+---
+
+## Project Structure
 
 ```
 .
-├── JavaBenchmarks/        # JMH-Benchmarks in Java
-│   └── src/main/java/org/paper/benchmarks/
-└── KotlinBenchmarks/      # JMH-Benchmarks in Kotlin
-    └── src/main/kotlin/
+├── src/jmh/
+│   ├── java/de/fhac/paper/benchmarks/
+│   │   ├── SieveBenchmarkJava.java          # Scenario 1 – Sieve of Eratosthenes
+│   │   ├── BoxingBenchmarkJava.java         # Scenario 2 – Primitive vs. boxed
+│   │   ├── LambdaBenchmarkJava.java         # Scenario 3 – Stream / lambda
+│   │   ├── NullCheckBenchmarkJava.java      # Scenario 4 – Null check
+│   │   └── VirtualThreadBenchmarkJava.java  # Scenario 5 – Virtual Threads
+│   └── kotlin/de/fhac/paper/benchmarks/
+│       ├── SieveBenchmarkKotlin.kt          # Scenario 1 – Sieve of Eratosthenes
+│       ├── BoxingBenchmarkKotlin.kt         # Scenario 2 – IntArray vs. List<Int>
+│       ├── LambdaBenchmarkKotlin.kt         # Scenario 3 – inline vs. non-inline
+│       ├── NullCheckBenchmarkKotlin.kt      # Scenario 4 – Kotlin null-safety
+│       └── CoroutineBenchmarkKotlin.kt      # Scenario 5 – Coroutines
+├── results/                                 # JSON output lands here
+├── build.gradle.kts
+├── Dockerfile
+├── build.sh   / build.bat                   # Linux/macOS and Windows (CMD/PowerShell)
+└── run.sh     / run.bat
 ```
 
-Beide Teilprojekte sind eigenständige Gradle-Projekte und verwenden dieselbe
-JMH-Version, sodass die Ergebnisse direkt vergleichbar sind.
+---
+
+## Requirements
+
+| Tool        | Version                   | Notes                             |
+|-------------|---------------------------|-----------------------------------|
+| Docker      | ≥ 24                      | Required for containerised runs   |
+| JDK (local) | 25                        | Only needed for local Gradle runs |
+| Gradle      | via wrapper (`./gradlew`) | No separate install needed        |
 
 ---
 
-## Benchmark-Szenarien
+## Quick Start
 
-> Die konkreten Benchmark-Klassen befinden sich aktuell in Entwicklung.
-> Geplante Szenarien:
-
-| Szenario | Beschreibung | Java-spezifisch | Kotlin-spezifisch |
-|---|---|---|---|
-| **Arithmetik / Schleifen** | Einfache numerische Berechnungen | `int`, `long` | `Int`, `Long` (primitiv vs. nullable) |
-| **String-Verarbeitung** | Verkettung, Splitting, Regex | `String` | `String` + Extension Functions |
-| **Kollektion / Iteration** | Sortieren, Filtern, Aggregieren | `ArrayList`, Streams | `List`, Sequences, Lambdas |
-| **Lambda / Higher-Order Functions** | Übergabe von Funktionsobjekten | Anonyme Klassen / Lambdas | `inline`-Funktionen vs. reguläre Lambdas |
-| **Boxing / Unboxing** | Nullable primitive Typen | `Integer` vs. `int` | `Int?` vs. `Int` |
-| **Nullsicherheit** | Null-Checks zur Laufzeit | Explizite `null`-Prüfungen | Kotlin Null-Safety (`?.`, `!!`) |
-| **Objekt-Allokation / GC** | Kurzlebige Objekterzeugung im Heap | POJO-Allokation | Data Classes, Inline Value Classes |
-
----
-
-## Voraussetzungen
-
-| Komponente | Version |
-|---|---|
-| JDK | 21 (LTS) |
-| Kotlin | 2.x |
-| Gradle | 9.3.0 (Wrapper enthalten) |
-| JMH | 1.37 |
-| Docker | 24+ (empfohlen) |
-
----
-
-## Empfehlung: Ausführung in Docker
-
-Um die Reproduzierbarkeit der Ergebnisse zu gewährleisten, wird die Ausführung aller
-Benchmarks **innerhalb eines Docker-Containers** empfohlen. Dies stellt sicher, dass
-JDK-Version, Betriebssystem-Umgebung und verfügbare Ressourcen auf allen Maschinen
-identisch sind – eine wesentliche Voraussetzung für vergleichbare Messergebnisse.
-
+**Linux / macOS**
 ```bash
-# Image bauen
-docker build -t jvm-benchmarks .
+# 1. Make scripts executable (once)
+chmod +x build.sh run.sh
 
-# Java-Benchmarks ausführen
-docker run --rm -v "$(pwd)/results:/results" jvm-benchmarks java \
-  -jar JavaBenchmarks/build/libs/benchmarks.jar -wi 5 -i 10 -f 3
+# 2. Build the Docker image
+./build.sh
 
-# Kotlin-Benchmarks ausführen
-docker run --rm -v "$(pwd)/results:/results" jvm-benchmarks java \
-  -jar KotlinBenchmarks/build/libs/benchmarks.jar -wi 5 -i 10 -f 3
+# 3. Run all benchmarks
+./run.sh
+
+# 4. Inspect results
+cat results/jmh-results.json
 ```
 
-> **Hinweis:** Für eine stabile Messung sollte der Container mit festen CPU- und
-> RAM-Limits gestartet werden (`--cpus="2"`, `--memory="4g"`), damit der Host-Scheduler
-> keinen Einfluss auf die Ergebnisse hat. Außerdem empfiehlt es sich, während der
-> Messung keine weiteren ressourcenintensiven Prozesse auf dem Host laufen zu lassen.
+**Windows (CMD or PowerShell)**
+```bat
+build.bat
+run.bat
+```
 
 ---
 
-## Benchmarks ausführen
+## Building
 
-### Java
+### Docker image (recommended)
+
+**Linux / macOS**
+```bash
+./build.sh          # tag: jmh-benchmarks:latest
+./build.sh v2       # tag: jmh-benchmarks:v2
+```
+
+**Windows**
+```bat
+build.bat           :: tag: jmh-benchmarks:latest
+build.bat v2        :: tag: jmh-benchmarks:v2
+```
+
+The image uses a two-stage build:
+- **Stage `build`** — `eclipse-temurin:25-jdk`, compiles sources and assembles the JMH fat JAR via `./gradlew jmhJar`
+- **Stage `run`** — `eclipse-temurin:25-jre`, contains only the JAR (lean image)
+
+### Local (without Docker)
 
 ```bash
-cd JavaBenchmarks
 ./gradlew jmhJar
-java -jar build/libs/benchmarks.jar -wi 5 -i 10 -f 3
 ```
 
-### Kotlin
+The fat JAR will be at `build/libs/<project>-jmh.jar`.
+
+---
+
+## Running Benchmarks
+
+All flags are optional. Defaults are defined directly in the run scripts.
+
+| Flag      | Default | Description                       |
+|-----------|---------|-----------------------------------|
+| `-wi <n>` | `10`    | Warmup iterations                 |
+| `-i <n>`  | `50`    | Measurement iterations            |
+| `-f <n>`  | `4`     | Forks (independent JVM processes) |
+| `FILTER`  | *(all)* | Benchmark name / regex            |
+
+### Linux / macOS
 
 ```bash
-cd KotlinBenchmarks
-./gradlew jmhJar
-java -jar build/libs/benchmarks.jar -wi 5 -i 10 -f 3
+./run.sh                              # full run with defaults
+./run.sh Sieve                        # Scenario 1 only
+./run.sh Boxing                       # Scenario 2 only
+./run.sh Lambda                       # Scenario 3 only
+./run.sh NullCheck                    # Scenario 4 only
+./run.sh "Coroutine|VirtualThread"    # Scenario 5 only
+./run.sh -wi 3 -i 5 -f 1             # quick smoke-test
+./run.sh -wi 3 -i 5 -f 1 Boxing      # smoke-test, Boxing only
 ```
 
-### JMH-Parameter
+### Windows (CMD or PowerShell)
 
-| Parameter | Bedeutung | Wert |
-|---|---|---|
-| `-wi` | Warmup-Iterationen | 5 |
-| `-i` | Mess-Iterationen | 10 |
-| `-f` | Forks (separate JVM-Prozesse) | 3 |
-| `-bm` | Benchmark-Modus | `avgt` (Average Time) |
-| `-tu` | Zeiteinheit | `ms` |
+```bat
+run.bat                              :: full run with defaults
+run.bat Sieve                        :: Scenario 1 only
+run.bat Boxing                       :: Scenario 2 only
+run.bat Lambda                       :: Scenario 3 only
+run.bat NullCheck                    :: Scenario 4 only
+run.bat "Coroutine|VirtualThread"    :: Scenario 5 only
+run.bat -wi 3 -i 5 -f 1             :: quick smoke-test
+run.bat -wi 3 -i 5 -f 1 Boxing      :: smoke-test, Boxing only
+```
 
-> Die Warmup-Phase ist essenziell, da die JVM zunächst im Interpreter läuft und
-> erst nach ausreichend vielen Aufrufen in nativen Maschinencode kompiliert
-> (Tiered Compilation, C1 → C2). Messungen ohne Warmup erfassen kein
-> stationäres Verhalten und sind nicht repräsentativ.
-
----
-
-## Speichermessung
-
-Zur Analyse der Heap-Nutzung und GC-Pausenzeiten werden die JVM-Flags
-`-Xlog:gc*` sowie async-profiler / JFR eingesetzt:
+### Run via Gradle (local JDK required)
 
 ```bash
-java -Xlog:gc*:file=gc.log -jar build/libs/benchmarks.jar
+./gradlew jmh
 ```
 
-Ausgewertet werden:
-- Allokationsrate (Objekte/s, Bytes/s)
-- GC-Häufigkeit und Pausenzeiten (G1GC)
-- Heap-Belegung nach vollständigem GC
+### Run the fat JAR directly
+
+```bash
+java \
+  -XX:+UseG1GC -Xms4g -Xmx4g \
+  -jar build/libs/*-jmh.jar \
+  -wi 10 -i 50 -f 4 \
+  -prof gc \
+  -v EXTRA \
+  -rff results/jmh-results.json \
+  -rf json
+```
 
 ---
 
-## Methodik & Validität
+## Benchmark Scenarios
 
-Die Benchmark-Gestaltung folgt den JMH-Richtlinien sowie den erweiterten
-Empfehlungen von Schiavio et al. (SAC '26), um irreführende JIT-Optimierungen
-durch unrealistische Ausführungsprofile zu vermeiden:
+| # | Name                      | Java                                                          | Kotlin                                 | What is measured                                                                       |
+|---|---------------------------|---------------------------------------------------------------|----------------------------------------|----------------------------------------------------------------------------------------|
+| 1 | **Sieve of Eratosthenes** | `SieveBenchmarkJava`                                          | `SieveBenchmarkKotlin`                 | Baseline — raw loop performance on primitive arrays, no language-specific constructs   |
+| 2 | **Primitive Boxing**      | `int[]` vs `List<Integer>`                                    | `IntArray` vs `List<Int>`              | Allocation pressure from autoboxing; GC frequency and pause times                      |
+| 3 | **Lambda / Stream**       | `Stream.filter/map`                                           | `inline` functions vs standard lambdas | Whether Kotlin's `inline` eliminates lambda object allocation overhead vs Java streams |
+| 4 | **Null-Safety**           | Manual `Objects.requireNonNull`                               | Kotlin nullable parameter (`String?`)  | Runtime overhead of Kotlin's compiler-inserted null checks                             |
+| 5 | **Concurrency**           | Virtual Threads (`Executors.newVirtualThreadPerTaskExecutor`) | Coroutines (`async`/`awaitAll`)        | Scheduling overhead and heap allocation for 10⁵ short-lived tasks                      |
 
-- **Blackhole-Konsumierung** aller berechneten Werte (verhindert Dead Code Elimination)
-- **Separate JVM-Prozesse** pro Benchmark-Fork (verhindert JIT-Kontamination)
-- **Realistische Eingabedaten** (keine konstanten Werte, die Constant Folding auslösen)
-- **Reproduzierbarkeit** durch fixierten Random-Seed bei datengenerierenden Szenarien
-
----
-
-## Zugehörige Publikation
-
-Dieses Repository begleitet die Seminararbeit:
-
-> *Eine empirische Analyse der Performance und Speicherverwaltung von Java und Kotlin*
-
-Relevante Referenzen: Flauzino et al. (SBCARS '18), Pereira et al. (SLE '17),
-Nanz & Furia (ICSE '15), Blackburn et al. – DaCapo (OOPSLA '06).
+All scenarios use `n = 100 000` as the default input size (`@Param("100000")`).
 
 ---
 
-## Lizenz
+## JMH Configuration
 
-MIT
+| Parameter              | Value         | Rationale                                                                      |
+|------------------------|---------------|--------------------------------------------------------------------------------|
+| Warmup iterations      | 10 × 2 s      | Ensures C2 JIT has fully compiled hotpaths before measurement begins           |
+| Measurement iterations | 50 × 2 s      | High iteration count reduces statistical noise                                 |
+| Forks                  | 4             | Each fork is a fresh JVM process; eliminates JIT state carry-over between runs |
+| Benchmark mode         | `AverageTime` | Reports average time per operation                                             |
+| Time unit              | per benchmark | Sieve/Lambda/Boxing: milliseconds; NullCheck: nanoseconds                      |
+| GC profiler            | `gc`          | Records allocated bytes/op and GC pause times via JMH's `GCProfiler`           |
+| Output format          | JSON          | Machine-readable; suitable for downstream analysis                             |
+
+The configuration follows the extended guidelines of Schiavio et al. (SAC '26) to avoid misleading microbenchmark results caused by unrealistic JVM profiles.
+
+---
+
+## Results
+
+Output is written to `results/jmh-results.json` (bind-mounted from the container to the host).
+
+Each entry contains:
+
+- `benchmark` — fully qualified benchmark method name
+- `mode` — `avgt`
+- `primaryMetric.score` / `scoreUnit` — mean time per operation
+- `secondaryMetrics` — GC allocation rate (`·gc.alloc.rate`), GC pause time (`·gc.time`), etc.
+
+---
+
+## JVM Flags & Reproducibility
+
+All runs use:
+
+```
+-XX:+UseG1GC   # G1 GC explicitly enabled (default since Java 9, but can be overridden by env)
+-Xms4g         # Initial heap = max heap → prevents GC-triggered heap expansion during measurement
+-Xmx4g         # Maximum heap fixed at 4 GB
+```
+
+> **Note on absolute values:** reported times depend on the host hardware. Only *relative* differences between Java and Kotlin within the same run are meaningful for the analysis.
+
+The full execution environment (JDK version, GC, heap) is pinned by the Docker image tag `eclipse-temurin:25-jdk`, ensuring reproducible results across machines.

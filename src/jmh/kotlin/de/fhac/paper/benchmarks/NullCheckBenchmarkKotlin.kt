@@ -7,13 +7,13 @@ import java.util.concurrent.TimeUnit
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Thread)
-class NullCheckBenchmarkKotlin {
+open class NullCheckBenchmarkKotlin {
 
     @Param("100000")
     var size: Int = 0
 
     @Benchmark
-    fun manualCheck(): Int {
+    fun nullsafe(): Int {
         var sum = 0
         for (i in 0..<size) {
             val s = if (i % 2 == 0) "x" else "y"
