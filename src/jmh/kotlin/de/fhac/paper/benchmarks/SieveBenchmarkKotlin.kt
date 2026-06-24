@@ -1,6 +1,7 @@
 package de.fhac.paper.benchmarks
 
 import org.openjdk.jmh.annotations.*
+import org.openjdk.jmh.infra.Blackhole
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -21,7 +22,7 @@ open class SieveBenchmarkKotlin{
     }
 
     @Benchmark
-    fun sieve(): Boolean {
+    fun sieve(bh: Blackhole){
         var i = 2
         while (i * i < size) {
             if (isPrime[i]) {
@@ -33,6 +34,6 @@ open class SieveBenchmarkKotlin{
             }
             i++
         }
-        return isPrime[size - 1]
+        bh.consume(isPrime[size - 1])
     }
 }

@@ -1,6 +1,7 @@
 package de.fhac.paper.benchmarks
 
 import org.openjdk.jmh.annotations.*
+import org.openjdk.jmh.infra.Blackhole
 import java.util.concurrent.TimeUnit
 
 
@@ -13,12 +14,12 @@ open class NullCheckBenchmarkKotlin {
     var size: Int = 0
 
     @Benchmark
-    fun run(): Int {
+    fun run(bh: Blackhole){
         var sum = 0
         for (i in 0..<size) {
             val s = if (i % 2 == 0) "x" else "y"
             sum += s.length
         }
-        return sum
+        bh.consume(sum)
     }
 }

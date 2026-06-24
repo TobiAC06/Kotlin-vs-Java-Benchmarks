@@ -1,6 +1,7 @@
 package de.fhac.paper.benchmarks;
 
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.TimeUnit;
 
@@ -13,13 +14,13 @@ public class NullCheckBenchmarkJava {
     int size;
 
     @Benchmark
-    public int run() {
+    public void run(Blackhole bh) {
         int sum = 0;
         for (int i = 0; i < size; i++) {
             String s = (i % 2 == 0) ? "x" : "y";
             if (s == null) throw new NullPointerException();
             sum += s.length();
         }
-        return sum;
+        bh.consume(sum);
     }
 }

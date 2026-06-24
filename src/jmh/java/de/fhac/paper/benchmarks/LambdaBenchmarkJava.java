@@ -1,6 +1,7 @@
 package de.fhac.paper.benchmarks;
 
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -22,19 +23,16 @@ public class LambdaBenchmarkJava {
     }
 
     @Benchmark
-    public int stream() {
-        return data.stream()
-                .filter(x -> x % 2 == 0)
-                .mapToInt(x -> x)
-                .sum();
+    public void stream(Blackhole bh) {
+        bh.consume(data.stream().filter(x -> x % 2 == 0).mapToInt(x -> x).sum());
     }
 
     @Benchmark
-    public int loop() {
+    public void loop(Blackhole bh) {
         int sum = 0;
         for (int x : data) {
             if (x % 2 == 0) sum += x;
         }
-        return sum;
+        bh.consume(sum);
     }
 }

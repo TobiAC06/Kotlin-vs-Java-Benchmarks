@@ -1,6 +1,7 @@
 package de.fhac.paper.benchmarks;
 
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +23,7 @@ public class SieveBenchmarkJava {
     }
 
     @Benchmark
-    public boolean sieve() {
+    public void sieve(Blackhole bh) {
         for (int i = 2; i * i < size; i++) {
             if (isPrime[i]) {
                 for (int j = i * i; j < size; j += i) {
@@ -30,6 +31,6 @@ public class SieveBenchmarkJava {
                 }
             }
         }
-        return isPrime[size - 1];
+        bh.consume(isPrime[size - 1]);
     }
 }

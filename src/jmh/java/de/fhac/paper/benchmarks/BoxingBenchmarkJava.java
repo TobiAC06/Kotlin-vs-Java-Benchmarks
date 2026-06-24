@@ -1,6 +1,7 @@
 package de.fhac.paper.benchmarks;
 
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -28,16 +29,16 @@ public class BoxingBenchmarkJava {
     }
 
     @Benchmark
-    public long primitiveSum() {
+    public void primitiveSum(Blackhole bh) {
         long sum = 0;
         for (int v : primitive) sum += v;
-        return sum;
+        bh.consume(sum);
     }
 
     @Benchmark
-    public long boxedSum() {
+    public void boxedSum(Blackhole bh) {
         long sum = 0;
         for (Integer v : boxed) sum += v;
-        return sum;
+        bh.consume(sum);
     }
 }

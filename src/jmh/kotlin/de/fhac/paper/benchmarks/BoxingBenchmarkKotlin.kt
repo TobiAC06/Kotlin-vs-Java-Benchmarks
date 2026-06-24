@@ -1,6 +1,7 @@
 package de.fhac.paper.benchmarks
 
 import org.openjdk.jmh.annotations.*
+import org.openjdk.jmh.infra.Blackhole
 import java.util.concurrent.TimeUnit
 
 @BenchmarkMode(Mode.AverageTime)
@@ -25,16 +26,16 @@ open class BoxingBenchmarkKotlin {
     }
 
     @Benchmark
-    fun primitiveSum(): Long {
+    fun primitiveSum(bh: Blackhole) {
         var sum: Long = 0
         for (v in primitive) sum += v.toLong()
-        return sum
+        bh.consume(sum)
     }
 
     @Benchmark
-    fun boxedSum(): Long {
+    fun boxedSum(bh: Blackhole) {
         var sum: Long = 0
         for (v in boxed) sum += v.toLong()
-        return sum
+        bh.consume(sum)
     }
 }

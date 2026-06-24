@@ -1,6 +1,7 @@
 package de.fhac.paper.benchmarks
 
 import org.openjdk.jmh.annotations.*
+import org.openjdk.jmh.infra.Blackhole
 import java.util.concurrent.TimeUnit
 
 @BenchmarkMode(Mode.AverageTime)
@@ -19,16 +20,16 @@ open class LambdaBenchmarkKotlin {
     }
 
     @Benchmark
-    fun stream(): Int {
-        return data.filter { x: Int -> x % 2 == 0 }.sum()
+    fun stream(bh: Blackhole) {
+        bh.consume(data.filter { x: Int -> x % 2 == 0 }.sum())
     }
 
     @Benchmark
-    fun loop(): Int {
+    fun loop(bh: Blackhole) {
         var sum = 0
         for (x in data) {
             if (x % 2 == 0) sum += x
         }
-        return sum
+        bh.consume(sum)
     }
 }

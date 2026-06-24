@@ -1,6 +1,7 @@
 package de.fhac.paper.benchmarks;
 
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -14,7 +15,7 @@ public class ConcurrencyBenchmarkJava {
     int size;
 
     @Benchmark
-    public long run() throws Exception {
+    public void run(Blackhole bh) throws Exception {
         try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
             List<Future<Integer>> futures = new ArrayList<>();
             for (int i = 0; i < size; i++) {
@@ -23,7 +24,7 @@ public class ConcurrencyBenchmarkJava {
             }
             long sum = 0;
             for (Future<Integer> f : futures) sum += f.get();
-            return sum;
+            bh.consume(sum);
         }
     }
 }

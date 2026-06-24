@@ -1,6 +1,7 @@
 package de.fhac.paper.benchmarks
 import kotlinx.coroutines.*
 import org.openjdk.jmh.annotations.*
+import org.openjdk.jmh.infra.Blackhole
 import java.util.concurrent.TimeUnit
 
 @BenchmarkMode(Mode.AverageTime)
@@ -12,14 +13,12 @@ open class ConcurrencyBenchmarkKotlin {
     var size: Int = 0
 
     @Benchmark
-    fun run(): Int = runBlocking {
-        coroutineScope {
-            val jobs = (0..<size).map { i ->
-                async {
-                    42 * i
-                }
-            }
-            jobs.awaitAll().sum()
-        }
+    fun run(bh: Blackhole) = runBlocking {
+        val result = (0 until size)
+            .map { i -> async { 42 * i } }
+            .awaitAll()
+            .sum()
+
+        bh.consume(result)
     }
 }
