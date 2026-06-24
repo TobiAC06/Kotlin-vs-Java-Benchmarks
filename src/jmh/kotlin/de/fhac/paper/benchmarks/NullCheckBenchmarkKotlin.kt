@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit
 
 
 @BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
 open class NullCheckBenchmarkKotlin {
 
