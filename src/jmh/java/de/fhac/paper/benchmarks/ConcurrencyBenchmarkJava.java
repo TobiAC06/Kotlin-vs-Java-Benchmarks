@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 @BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(java.util.concurrent.TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
 public class ConcurrencyBenchmarkJava {
 
