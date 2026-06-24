@@ -47,3 +47,25 @@ CMD ["-prof", "gc", \
      "-v", "EXTRA", \
      "-rff", "results/jmh-results.json", \
      "-rf", "json"]
+
+# =====================================================================
+#  Stage 3 – Analyse
+#  Lightweight Python image; runs analyze_benchmarks.py against the
+#  JSON results produced by the run stage.
+# =====================================================================
+FROM python:3.14-slim AS analyse
+
+WORKDIR /analyse
+
+# Install Python dependencies
+RUN pip install --no-cache-dir matplotlib numpy
+
+# Copy the analysis script
+COPY analysis/analyze_benchmarks.py .
+
+# Results are expected at /results (mount the same host volume used in run)
+VOLUME ["/results"]
+
+# Default: read results/jmh-results.json, write plots to results/
+ENTRYPOINT ["python", "analyze_benchmarks.py"]
+CMD ["/results/jmh-results.json", "--out-dir", "/results"]

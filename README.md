@@ -12,10 +12,11 @@ Accompanies the paper *"Eine empirische Analyse der Performance und Speicherverw
 3. [Quick Start](#quick-start)
 4. [Building](#building)
 5. [Running Benchmarks](#running-benchmarks)
-6. [Benchmark Scenarios](#benchmark-scenarios)
-7. [JMH Configuration](#jmh-configuration)
-8. [Results](#results)
-9. [JVM Flags & Reproducibility](#jvm-flags--reproducibility)
+6. [Analysing Results](#analysing-results)
+7. [Benchmark Scenarios](#benchmark-scenarios)
+8. [JMH Configuration](#jmh-configuration)
+9. [Results](#results)
+10. [JVM Flags & Reproducibility](#jvm-flags--reproducibility)
 
 ---
 
@@ -36,10 +37,12 @@ Accompanies the paper *"Eine empirische Analyse der Performance und Speicherverw
 │       ├── LambdaBenchmarkKotlin.kt         # Scenario 3 – inline vs. non-inline
 │       ├── NullCheckBenchmarkKotlin.kt      # Scenario 4 – Kotlin null-safety
 │       └── CoroutineBenchmarkKotlin.kt      # Scenario 5 – Coroutines
-├── results/                                 # JSON output lands here
+├── analysis/
+│   └── analyze_benchmarks.py               # Plot generator (runtime + memory)
+├── results/                                # JSON output and generated plots land here
 ├── build.gradle.kts
 ├── Dockerfile
-├── build.sh   / build.bat                   # Linux/macOS and Windows (CMD/PowerShell)
+├── build.sh   / build.bat                  # Linux/macOS and Windows (CMD/PowerShell)
 └── run.sh     / run.bat
 ```
 
@@ -62,43 +65,50 @@ Accompanies the paper *"Eine empirische Analyse der Performance und Speicherverw
 # 1. Make scripts executable (once)
 chmod +x build.sh run.sh
 
-# 2. Build the Docker image
+# 2. Build both Docker images
 ./build.sh
 
-# 3. Run all benchmarks
-./run.sh
+# 3. Run all benchmarks and generate plots in one step
+./run.sh all
 
 # 4. Inspect results
 cat results/jmh-results.json
+open results/benchmark_runtime.png
 ```
 
 **Windows (CMD or PowerShell)**
 ```bat
 build.bat
-run.bat
+run.bat all
 ```
 
 ---
 
 ## Building
 
-### Docker image (recommended)
+### Docker images (recommended)
+
+The project uses two Docker images — one for running benchmarks, one for analysis.
 
 **Linux / macOS**
 ```bash
-./build.sh          # tag: jmh-benchmarks:latest
-./build.sh v2       # tag: jmh-benchmarks:v2
+./build.sh          # builds both images with tag :latest
+./build.sh v2       # builds both images with tag :v2
 ```
 
 **Windows**
 ```bat
-build.bat           :: tag: jmh-benchmarks:latest
-build.bat v2        :: tag: jmh-benchmarks:v2
+build.bat           :: builds both images with tag :latest
+build.bat v2        :: builds both images with tag :v2
 ```
 
-The image uses a two-stage build:
-- **Stage `build`** — `eclipse-temurin:25-jdk`, compiles sources and assembles the JMH fat JAR via `./gradlew jmhJar`
-- **Stage `run`** — `eclipse-temurin:25-jre`, contains only the JAR (lean image)
+The Dockerfile uses a three-stage build:
+
+| Stage       | Base image                  | Purpose                                              |
+|-------------|-----------------------------|------------------------------------------------------|
+| `build`     | `eclipse-temurin:25-jdk`    | Compiles sources and assembles the JMH fat JAR       |
+| `run`       | `eclipse-temurin:25-jre`    | Lean runtime image; contains only the JAR            |
+| `analyse`   | `python:3.12-slim`          | Runs `analyze_benchmarks.py`; produces PNG plots     |
 
 ### Local (without Docker)
 
@@ -112,7 +122,15 @@ The fat JAR will be at `build/libs/<project>-jmh.jar`.
 
 ## Running Benchmarks
 
-All flags are optional. Defaults are defined directly in the run scripts.
+The run scripts accept an optional command as the first argument:
+
+| Command    | Effect                                    |
+|------------|-------------------------------------------|
+| `bench`    | Run benchmarks only (default)             |
+| `analyse`  | Generate plots from existing results      |
+| `all`      | Run benchmarks, then generate plots       |
+
+All further flags are optional. Defaults mirror `build.gradle.kts`.
 
 | Flag      | Default | Description                       |
 |-----------|---------|-----------------------------------|
@@ -124,7 +142,9 @@ All flags are optional. Defaults are defined directly in the run scripts.
 ### Linux / macOS
 
 ```bash
-./run.sh                              # full run with defaults
+./run.sh                              # full benchmark run with defaults
+./run.sh all                          # benchmark + analyse
+./run.sh analyse                      # analyse existing results
 ./run.sh Sieve                        # Scenario 1 only
 ./run.sh Boxing                       # Scenario 2 only
 ./run.sh Lambda                       # Scenario 3 only
@@ -137,7 +157,9 @@ All flags are optional. Defaults are defined directly in the run scripts.
 ### Windows (CMD or PowerShell)
 
 ```bat
-run.bat                              :: full run with defaults
+run.bat                              :: full benchmark run with defaults
+run.bat all                          :: benchmark + analyse
+run.bat analyse                      :: analyse existing results
 run.bat Sieve                        :: Scenario 1 only
 run.bat Boxing                       :: Scenario 2 only
 run.bat Lambda                       :: Scenario 3 only
@@ -164,6 +186,34 @@ java \
   -v EXTRA \
   -rff results/jmh-results.json \
   -rf json
+```
+
+---
+
+## Analysing Results
+
+The `analyse` stage reads `results/jmh-results.json` and produces two bar-chart PNGs in the same directory.
+
+| File                       | Content                                         |
+|----------------------------|-------------------------------------------------|
+| `benchmark_runtime.png`    | Mean execution time (ns/op) per scenario        |
+| `benchmark_memory.png`     | Heap allocation per operation (B/op) per scenario |
+
+### Via Docker (recommended)
+
+```bash
+./run.sh analyse           # Linux / macOS
+run.bat  analyse           # Windows
+```
+
+### Directly with Python
+
+```bash
+pip install matplotlib numpy
+python analysis/analyze_benchmarks.py results/jmh-results.json
+# plots land in the current directory
+
+python analysis/analyze_benchmarks.py results/jmh-results.json --out-dir results/ --dpi 200
 ```
 
 ---
@@ -208,6 +258,11 @@ Each entry contains:
 - `mode` — `avgt`
 - `primaryMetric.score` / `scoreUnit` — mean time per operation
 - `secondaryMetrics` — GC allocation rate (`·gc.alloc.rate`), GC pause time (`·gc.time`), etc.
+
+After running `analyse`, two plot files are added to the same directory:
+
+- `results/benchmark_runtime.png`
+- `results/benchmark_memory.png`
 
 ---
 
