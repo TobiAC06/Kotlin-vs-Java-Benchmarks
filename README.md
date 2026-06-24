@@ -194,10 +194,10 @@ java \
 
 The `analyse` stage reads `results/jmh-results.json` and produces two bar-chart PNGs in the same directory.
 
-| File                       | Content                                         |
-|----------------------------|-------------------------------------------------|
-| `benchmark_runtime.png`    | Mean execution time (ns/op) per scenario        |
-| `benchmark_memory.png`     | Heap allocation per operation (B/op) per scenario |
+| File                    | Content                                           |
+|-------------------------|---------------------------------------------------|
+| `benchmark_runtime.png` | Mean execution time (ns/op) per scenario          |
+| `benchmark_memory.png`  | Heap allocation per operation (B/op) per scenario |
 
 ### Via Docker (recommended)
 
@@ -239,8 +239,7 @@ All scenarios use `n = 100 000` as the default input size (`@Param("100000")`).
 | Warmup iterations      | 10 × 2 s      | Ensures C2 JIT has fully compiled hotpaths before measurement begins           |
 | Measurement iterations | 50 × 2 s      | High iteration count reduces statistical noise                                 |
 | Forks                  | 4             | Each fork is a fresh JVM process; eliminates JIT state carry-over between runs |
-| Benchmark mode         | `AverageTime` | Reports average time per operation                                             |
-| Time unit              | per benchmark | Sieve/Lambda/Boxing: milliseconds; NullCheck: nanoseconds                      |
+| Benchmark mode         | `AverageTime` | Reports average time per operation (ms/op)                                     |
 | GC profiler            | `gc`          | Records allocated bytes/op and GC pause times via JMH's `GCProfiler`           |
 | Output format          | JSON          | Machine-readable; suitable for downstream analysis                             |
 
