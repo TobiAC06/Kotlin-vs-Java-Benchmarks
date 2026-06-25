@@ -9,17 +9,26 @@
 
 set -euo pipefail
 
-IMAGE_NAME="jmh-benchmarks"
+IMAGE_NAME_BENCH="jmh-benchmarks"
+IMAGE_NAME_ANALYSE="jmh-analyse"
 TAG="${1:-latest}"
-FULL_TAG="${IMAGE_NAME}:${TAG}"
+FULL_BENCH_TAG="${IMAGE_NAME_BENCH}:${TAG}"
+FULL_ANALYSE_TAG="${IMAGE_NAME_ANALYSE}:${TAG}"
 
-echo "==> Building Docker image: ${FULL_TAG}"
+echo "==> Building Docker image for running the Benchmarks: ${FULL_BENCH_TAG}"
 docker build \
   --target run \
-  --tag "${FULL_TAG}" \
+  --tag "${FULL_BENCH_TAG}" \
+  --file Dockerfile \
+  .
+
+echo "==> Building Docker image for analysing the Benchmarks: ${FULL_ANALYSE_TAG}"
+docker build \
+  --target analyse \
+  --tag "${FULL_ANALYSE_TAG}" \
   --file Dockerfile \
   .
 
 echo ""
-echo "✓ Image built successfully: ${FULL_TAG}"
-echo "  Run benchmarks with:  ./run.sh"
+echo "==> Images built successfully"
+echo "Run benchmarks with:  ./run.sh"
