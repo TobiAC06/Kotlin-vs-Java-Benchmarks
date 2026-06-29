@@ -27,12 +27,4 @@ public class LambdaBenchmarkJava {
         bh.consume(data.stream().filter(x -> x % 2 == 0).mapToInt(x -> x).sum());
     }
 
-    @Benchmark
-    public void loop(Blackhole bh) {
-        int sum = 0;
-        for (int x : data) {
-            if (x % 2 == 0) sum += x;
-        }
-        bh.consume(sum);
-    }
 }

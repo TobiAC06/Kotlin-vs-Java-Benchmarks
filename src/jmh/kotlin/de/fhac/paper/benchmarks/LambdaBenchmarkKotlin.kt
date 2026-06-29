@@ -21,15 +21,6 @@ open class LambdaBenchmarkKotlin {
 
     @Benchmark
     fun stream(bh: Blackhole) {
-        bh.consume(data.filter { x: Int -> x % 2 == 0 }.sum())
-    }
-
-    @Benchmark
-    fun loop(bh: Blackhole) {
-        var sum = 0
-        for (x in data) {
-            if (x % 2 == 0) sum += x
-        }
-        bh.consume(sum)
+        bh.consume(data.asSequence().filter { x: Int -> x % 2 == 0 }.sum())
     }
 }
