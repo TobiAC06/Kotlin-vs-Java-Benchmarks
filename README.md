@@ -62,18 +62,16 @@ Accompanies the paper *"Eine empirische Analyse der Performance und Speicherverw
 
 **Linux / macOS**
 ```bash
-# 1. Make scripts executable (once)
-chmod +x build.sh run.sh
-
-# 2. Build both Docker images
+# 1. Build both Docker images
 ./build.sh
 
-# 3. Run all benchmarks and generate plots in one step
+# 2. Run all benchmarks and generate plots in one step
 ./run.sh all
 
-# 4. Inspect results
+# 3. Inspect results
 cat results/jmh-results.json
 open results/benchmark_runtime.png
+open results/benchmark_memory.png
 ```
 
 **Windows (CMD or PowerShell)**
