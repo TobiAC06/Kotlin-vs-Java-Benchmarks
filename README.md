@@ -222,7 +222,7 @@ python analysis/analyze_benchmarks.py results/jmh-results.json --out-dir results
 |---|---------------------------|---------------------------------------------------------------|----------------------------------------|----------------------------------------------------------------------------------------|
 | 1 | **Sieve of Eratosthenes** | `SieveBenchmarkJava`                                          | `SieveBenchmarkKotlin`                 | Baseline — raw loop performance on primitive arrays, no language-specific constructs   |
 | 2 | **Primitive Boxing**      | `int[]` vs `List<Integer>`                                    | `IntArray` vs `List<Int>`              | Allocation pressure from autoboxing; GC frequency and pause times                      |
-| 3 | **Lambda / Stream**       | `Stream.filter/map`                                           | `inline` functions vs standard lambdas | Whether Kotlin's `inline` eliminates lambda object allocation overhead vs Java streams |
+| 3 | **Lambda / Stream**       | `Stream.filter/map`                                           | `.asSequence.filter/sum`               | Whether Kotlin's `Sequences` are comparable to Java streams                            |
 | 4 | **Null-Safety**           | Manual `Objects.requireNonNull`                               | Kotlin nullable parameter (`String?`)  | Runtime overhead of Kotlin's compiler-inserted null checks                             |
 | 5 | **Concurrency**           | Virtual Threads (`Executors.newVirtualThreadPerTaskExecutor`) | Coroutines (`async`/`awaitAll`)        | Scheduling overhead and heap allocation for 10⁵ short-lived tasks                      |
 
